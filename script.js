@@ -1,17 +1,22 @@
-function playRandomGlissando() {
+let endFrequency = randomFrequency(65.41, 2093); // Start with a random frequency
+
+function playAudio() {
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     let startTime = audioContext.currentTime;
-    let endTime = startTime + 4; // Duration of the glissando
+    let glissandoEndTime = startTime + 4; // End time of the glissando
+    let holdEndTime = glissandoEndTime + 1; // End time of the hold
 
-    const startFrequency = randomFrequency(65.41, 2093); // Random frequency between C2 and C7
-    const endFrequency = randomFrequency(65.41, 2093); // Another random frequency between C2 and C7
+    const startFrequency = endFrequency; // Start from the last end frequency
+    endFrequency = randomFrequency(65.41, 2093); // Next random end frequency
 
     const oscillator = audioContext.createOscillator();
     oscillator.frequency.setValueAtTime(startFrequency, startTime);
-    oscillator.frequency.linearRampToValueAtTime(endFrequency, endTime);
+    oscillator.frequency.linearRampToValueAtTime(endFrequency, glissandoEndTime);
     oscillator.connect(audioContext.destination);
     oscillator.start(startTime);
-    oscillator.stop(endTime);
+    oscillator.stop(holdEndTime);
+
+    setTimeout(playAudio, (holdEndTime - startTime) * 1000); // Schedule the next glissando
 }
 
 function randomFrequency(min, max) {
