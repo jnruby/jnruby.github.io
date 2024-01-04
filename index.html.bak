@@ -20,7 +20,7 @@
     </style>
 </head>
 <body>
-    <button onclick="playGlissando()">Play Glissando</button>
-    <script src="script.js?v=1704412252"></script>
+    <button onclick="playRandomGlissando()">Play Glissando</button>
+    <script src="script.js?v=1704412452"></script>
 </body>
 </html>
