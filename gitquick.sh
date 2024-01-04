@@ -1,5 +1,22 @@
 #!/bin/bash
 
+# Path to your repository and files
+repo_path="."
+html_file="$repo_path/index.html"
+js_file="$repo_path/script.js"
+
+# Function to update version in HTML file
+update_version() {
+    version=$(date +%s) # Using Unix timestamp for versioning
+    sed -i.bak "s/script.js?v=[0-9]*/script.js?v=$version/g" "$html_file" # Update version
+}
+
+# Change to your repository's directory
+cd $repo_path
+
+# Update version in HTML file
+update_version
+
 # Add all changed files to the staging area
 git add .
 
