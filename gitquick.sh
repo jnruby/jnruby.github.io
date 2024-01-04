@@ -6,9 +6,10 @@ html_file="$repo_path/index.html"
 js_file="$repo_path/script.js"
 
 # Function to update version in HTML file
+# Function to update version in HTML file
 update_version() {
     version=$(date +%s) # Using Unix timestamp for versioning
-    sed -i.bak "s/script.js?v=[0-9]*/script.js?v=$version/g" "$html_file" # Update version
+    sed -i.bak "s/script.js?v=[^&\"]*/script.js?v=$version/g" "$html_file" # Update version
 }
 
 # Change to your repository's directory
