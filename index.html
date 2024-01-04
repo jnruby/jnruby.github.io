@@ -20,22 +20,20 @@
     </style>
 </head>
 <body>
-    <button onclick="playScale()">Play Scale</button>
+    <button onclick="playGlissando()">Play Glissando</button>
 
-        <script>
-        function playScale() {
+    <script>
+        function playGlissando() {
             const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const scaleNotes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25]; // Frequencies for C Major scale
             let startTime = audioContext.currentTime;
+            let endTime = startTime + 0.5 * 8; // Duration of the entire glissando
 
-            scaleNotes.forEach(frequency => {
-                const oscillator = audioContext.createOscillator();
-                oscillator.frequency.value = frequency;
-                oscillator.connect(audioContext.destination);
-                oscillator.start(startTime);
-                oscillator.stop(startTime + 0.5);
-                startTime += 0.5;
-            });
+            const oscillator = audioContext.createOscillator();
+            oscillator.frequency.setValueAtTime(261.63, startTime); // Start at C4
+            oscillator.frequency.linearRampToValueAtTime(523.25, endTime); // End at C5
+            oscillator.connect(audioContext.destination);
+            oscillator.start(startTime);
+            oscillator.stop(endTime);
         }
     </script>
 </body>
