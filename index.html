@@ -3,25 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <title>Music Scale Player</title>
+    <style>
+        body {
+            background: linear-gradient(to right, #0575E6, #00F260);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
 </head>
 <body>
     <button onclick="playScale()">Play Scale</button>
 
     <script>
-        function playScale() {
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const scaleNotes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25]; // Frequencies for C Major scale
-            let startTime = audioContext.currentTime;
-
-            scaleNotes.forEach(frequency => {
-                const oscillator = audioContext.createOscillator();
-                oscillator.frequency.value = frequency;
-                oscillator.connect(audioContext.destination);
-                oscillator.start(startTime);
-                oscillator.stop(startTime + 0.5);
-                startTime += 0.5;
-            });
-        }
+        // Your JavaScript for playing the scale goes here
     </script>
 </body>
 </html>
+
