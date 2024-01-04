@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Music Scale Player</title>
+</head>
+<body>
+    <button onclick="playScale()">Play Scale</button>
+
+    <script>
+        function playScale() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const scaleNotes = [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25]; // Frequencies for C Major scale
+            let startTime = audioContext.currentTime;
+
+            scaleNotes.forEach(frequency => {
+                const oscillator = audioContext.createOscillator();
+                oscillator.frequency.value = frequency;
+                oscillator.connect(audioContext.destination);
+                oscillator.start(startTime);
+                oscillator.stop(startTime + 0.5);
+                startTime += 0.5;
+            });
+        }
+    </script>
+</body>
+</html>
