@@ -1,38 +1,37 @@
 let audioContext;
-let oscillator;
 let isPlaying = false;
+let endFrequency = randomFrequency(65.41, 2093); // Initial end frequency
 
 function playAudio() {
     if (!isPlaying) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
-        continuePlaying();
         isPlaying = true;
+        startGlissando();
     }
 }
 
-function continuePlaying() {
+function startGlissando() {
     let startTime = audioContext.currentTime;
     let glissandoEndTime = startTime + 4;
     let holdEndTime = glissandoEndTime + 1;
 
-    oscillator = audioContext.createOscillator();
-    oscillator.frequency.setValueAtTime(randomFrequency(65.41, 2093), startTime);
+    let oscillator = audioContext.createOscillator();
+    oscillator.frequency.setValueAtTime(endFrequency, startTime); // Start from the last end frequency
+    endFrequency = randomFrequency(65.41, 2093); // Next random frequency
+    oscillator.frequency.linearRampToValueAtTime(endFrequency, glissandoEndTime);
     oscillator.connect(audioContext.destination);
     oscillator.start(startTime);
     oscillator.stop(holdEndTime);
 
-    setTimeout(() => {
-        if (isPlaying) {
-            continuePlaying();
-        }
-    }, (holdEndTime - startTime) * 1000);
+    if (isPlaying) {
+        setTimeout(startGlissando, (holdEndTime - startTime) * 1000);
+    }
 }
 
 function stopAudio() {
-    if (isPlaying && audioContext) {
-        oscillator.stop();
-        audioContext.close();
+    if (isPlaying) {
         isPlaying = false;
+        audioContext.close();
     }
 }
 
