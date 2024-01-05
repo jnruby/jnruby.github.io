@@ -64,6 +64,7 @@ function startGlissando() {
     let gainNode = audioContext.createGain();
 
     oscillator.frequency.setValueAtTime(endFrequency, startTime);
+    endFrequency = randomFrequency(65.41, 1500);
     oscillator.frequency.linearRampToValueAtTime(endFrequency, glissandoEndTime);
 
     oscillator.connect(gainNode);
