@@ -16,16 +16,36 @@ function startGlissando() {
     let holdEndTime = glissandoEndTime + 1;
 
     let oscillator = audioContext.createOscillator();
+    let gainNode = audioContext.createGain();
+
     oscillator.frequency.setValueAtTime(endFrequency, startTime); // Start from the last end frequency
     endFrequency = randomFrequency(65.41, 2093); // Next random frequency
     oscillator.frequency.linearRampToValueAtTime(endFrequency, glissandoEndTime);
-    oscillator.connect(audioContext.destination);
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    // Swell dynamics
+    applyDynamics(gainNode, startTime, holdEndTime);
+
     oscillator.start(startTime);
     oscillator.stop(holdEndTime);
 
     if (isPlaying) {
         setTimeout(startGlissando, (holdEndTime - startTime) * 1000);
     }
+}
+
+function applyDynamics(gainNode, startTime, endTime) {
+    let swellDuration = randomBetween(6, 12);
+    let midPoint = startTime + (endTime - startTime) / 2;
+
+    // Swell up
+    gainNode.gain.setValueAtTime(0.5, startTime);
+    gainNode.gain.linearRampToValueAtTime(1, midPoint);
+
+    // Swell down
+    gainNode.gain.linearRampToValueAtTime(0.5, endTime);
 }
 
 function stopAudio() {
@@ -38,3 +58,8 @@ function stopAudio() {
 function randomFrequency(min, max) {
     return Math.random() * (max - min) + min;
 }
+
+function randomBetween(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
