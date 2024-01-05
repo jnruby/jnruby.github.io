@@ -33,12 +33,11 @@ function stopAudio() {
     }
 }
 
-
 function createSpringReverb(context) {
     let feedback = context.createGain();
     let delay = context.createDelay();
     feedback.gain.value = 0.8;
-    delay.delayTime.value = 0.03;
+    delay.delayTime.value = 0.04;
 
     delay.connect(feedback);
     feedback.connect(delay);
@@ -65,7 +64,7 @@ function startGlissando() {
     let gainNode = audioContext.createGain();
 
     oscillator.frequency.setValueAtTime(endFrequency, startTime);
-    endFrequency = randomFrequency(65.41, 2093);
+    endFrequency = randomFrequency(65.41, 1500);
     oscillator.frequency.linearRampToValueAtTime(endFrequency, glissandoEndTime);
 
     oscillator.connect(gainNode);
