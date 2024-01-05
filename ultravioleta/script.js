@@ -1,4 +1,5 @@
-let audioContext;
+// Create an audio context
+let audioContext = new AudioContext();
 let isPlaying = false;
 let endFrequency = randomFrequency(65.41, 1500);
 let colorChangeIntervals = [];
@@ -33,11 +34,14 @@ function stopAudio() {
     }
 }
 
+
 function createSpringReverb(context) {
     let feedback = context.createGain();
     let delay = context.createDelay();
-    feedback.gain.value = 0.8;
-    delay.delayTime.value = 0.04;
+
+    // Increase feedback gain and delay time for a longer reverb tail
+    feedback.gain.value = 0.8;  // Higher value for more pronounced effect
+    delay.delayTime.value = 0.3; // Longer delay for extended reverb
 
     delay.connect(feedback);
     feedback.connect(delay);
@@ -59,26 +63,51 @@ function startGlissando() {
     let glissandoEndTime = startTime + 4;
     let holdEndTime = glissandoEndTime + 1;
 
-    let oscillator = audioContext.createOscillator();
+    let sineOscillator = audioContext.createOscillator();
+    sineOscillator.type = 'sine'; 
+    let squareOscillator = audioContext.createOscillator();
+    squareOscillator.type = 'square';
+
     let springReverb = createSpringReverb(audioContext);
     let gainNode = audioContext.createGain();
 
-    oscillator.frequency.setValueAtTime(endFrequency, startTime);
+    sineOscillator.frequency.setValueAtTime(endFrequency + 50, startTime);
+    squareOscillator.frequency.setValueAtTime(endFrequency, startTime);
     endFrequency = randomFrequency(65.41, 1500);
-    oscillator.frequency.linearRampToValueAtTime(endFrequency, glissandoEndTime);
+    sineOscillator.frequency.linearRampToValueAtTime(endFrequency + 50, glissandoEndTime);
+    squareOscillator.frequency.linearRampToValueAtTime(endFrequency, glissandoEndTime);
 
-    oscillator.connect(gainNode);
+    sineOscillator.connect(gainNode);
+    squareOscillator.connect(gainNode);
     gainNode.connect(springReverb);
     springReverb.connect(audioContext.destination);
 
     applyDynamics(gainNode, startTime, holdEndTime);
 
-    oscillator.start(startTime);
-    oscillator.stop(holdEndTime);
+    sineOscillator.start(startTime);
+    squareOscillator.start(startTime);
+    sineOscillator.stop(holdEndTime);
+    squareOscillator.stop(holdEndTime);
 
     if (isPlaying) {
         setTimeout(startGlissando, (holdEndTime - startTime) * 1000);
     }
+        // Microphone setup
+        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
+            let micInput = audioContext.createMediaStreamSource(stream);
+            let modulator = audioContext.createGain();
+    
+            // Connect the sine oscillator to the modulator
+            sineOscillator.connect(modulator.gain);
+    
+            // Connect the microphone to the modulator
+            micInput.connect(modulator);
+    
+            // Connect modulator to the rest of your audio chain
+            modulator.connect(gainNode);
+        }).catch(err => {
+            console.error('Error accessing the microphone', err);
+        });
 }
 
 function startColorChange() {
