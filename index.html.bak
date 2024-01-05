@@ -3,25 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <title>ultravioleta</title>
-    <style>
-        body {
-            background: linear-gradient(to right, #0575E6, #00F260);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
-        }
-        button {
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-    </style>
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <button onclick="playAudio()">Play</button>
-    <button onclick="stopAudio()">Stop</button>
-    <script src="script.js?v=1704413513"></script>
+    <div id="container"></div>
+    <div class="controls">
+        <button onclick="playAudio()">Play Audio</button>
+        <button onclick="stopAudio()">Stop Audio</button>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
+

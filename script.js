@@ -2,6 +2,28 @@ let audioContext;
 let isPlaying = false;
 let endFrequency = randomFrequency(65.41, 2093);
 
+document.addEventListener('DOMContentLoaded', () => {
+    createColorBlocks();
+    document.querySelectorAll('.color-block').forEach(block => {
+        setInterval(() => changeBlockColor(block), Math.random() * 5000 + 2000);
+    });
+});
+
+function createColorBlocks() {
+    const container = document.getElementById('container');
+    for (let i = 0; i < 24; i++) {
+        let block = document.createElement('div');
+        block.className = 'color-block';
+        container.appendChild(block);
+    }
+}
+
+function changeBlockColor(block) {
+    const greenShade = `rgb(0, ${Math.floor(Math.random() * 256)}, 0)`;
+    block.style.backgroundColor = greenShade;
+}
+
+
 function playAudio() {
     if (!isPlaying) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
