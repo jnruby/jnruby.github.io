@@ -1,12 +1,10 @@
 let audioContext;
 let isPlaying = false;
 let endFrequency = randomFrequency(65.41, 2093);
+let colorChangeIntervals = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     createColorBlocks();
-    document.querySelectorAll('.color-block').forEach(block => {
-        setInterval(() => changeBlockColor(block), Math.random() * 5000 + 2000);
-    });
 });
 
 function createColorBlocks() {
@@ -18,11 +16,6 @@ function createColorBlocks() {
     }
 }
 
-function changeBlockColor(block) {
-    const greenShade = `rgb(0, ${Math.floor(Math.random() * 256)}, 0)`;
-    block.style.backgroundColor = greenShade;
-}
-
 
 function playAudio() {
     if (!isPlaying) {
@@ -31,6 +24,15 @@ function playAudio() {
         startGlissando();
     }
 }
+
+function stopAudio() {
+    if (isPlaying) {
+        isPlaying = false;
+        audioContext.close();
+        stopColorChange();
+    }
+}
+
 
 function createSpringReverb(context) {
     let feedback = context.createGain();
@@ -80,12 +82,6 @@ function startGlissando() {
     }
 }
 
-function stopAudio() {
-    if (isPlaying) {
-        isPlaying = false;
-        audioContext.close();
-    }
-}
 
 function randomFrequency(min, max) {
     return Math.random() * (max - min) + min;
@@ -93,4 +89,22 @@ function randomFrequency(min, max) {
 
 function randomBetween(min, max) {
     return Math.random() * (max - min) + min;
+}
+
+function startColorChange() {
+    document.querySelectorAll('.color-block').forEach(block => {
+        const interval = setInterval(() => changeBlockColor(block), Math.random() * 5000 + 2000);
+        colorChangeIntervals.push(interval);
+    });
+}
+
+function stopColorChange() {
+    colorChangeIntervals.forEach(clearInterval);
+    colorChangeIntervals = [];
+}
+
+function changeBlockColor(block) {
+    const greenShade = `rgb(0, ${Math.floor(Math.random() * 256)}, 0)`;
+    block.style.transition = 'background-color 2s'; // Slow transition for the color change
+    block.style.backgroundColor = greenShade;
 }
