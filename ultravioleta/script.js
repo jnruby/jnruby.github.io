@@ -1,6 +1,6 @@
 let audioContext;
 let isPlaying = false;
-let endFrequency = randomFrequency(65.41, 2093);
+let endFrequency = randomFrequency(65.41, 1500);
 let colorChangeIntervals = [];
 
 document.addEventListener('DOMContentLoaded', () => {
