@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Path to your repository and files
-repo_path="~/site/ultravioleta"
+repo_path="."
 html_file="$repo_path/index.html"
 js_file="$repo_path/script.js"
 
