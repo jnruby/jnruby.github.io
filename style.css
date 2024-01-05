@@ -1,30 +1,29 @@
-body {
+body, html {
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    height: 100vh;
-    background-color: #f0f0f0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden; /* Prevents scrolling */
 }
 
 #container {
     display: grid;
-    grid-template-columns: repeat(6, 50px);  /* Adjust size as needed */
-    grid-template-rows: repeat(4, 50px);  /* Adjust size as needed */
-    gap: 10px;
+    width: 100vw;
+    height: 100vh;
+    grid-template-columns: repeat(6, 1fr);  /* 6 columns */
+    grid-template-rows: repeat(4, 1fr);  /* 4 rows */
+    gap: 0; /* Removes gaps between blocks */
 }
 
 .color-block {
-    width: 50px;  /* Adjust size as needed */
-    height: 50px;  /* Adjust size as needed */
-    border: 1px solid #000;
+    border: none; /* Removes border */
     background-color: green;
 }
 
 .controls {
-    margin-top: 20px;
+    position: absolute;
+    top: 10px;
+    left: 10px;
 }
 
 button {
