@@ -74,6 +74,12 @@ function startGlissando() {
     sineOscillator.frequency.setValueAtTime(endFrequency + 50, startTime);
     squareOscillator.frequency.setValueAtTime(endFrequency, startTime);
     endFrequency = randomFrequency(65.41, 1500);
+
+
+    // Convert frequency to note name and update display
+    let noteName = frequencyToNoteName(endFrequency);
+    updateFrequencyDisplay(noteName);
+
     sineOscillator.frequency.linearRampToValueAtTime(endFrequency + 50, glissandoEndTime);
     squareOscillator.frequency.linearRampToValueAtTime(endFrequency, glissandoEndTime);
 
@@ -109,6 +115,38 @@ function startGlissando() {
             console.error('Error accessing the microphone', err);
         });
 }
+
+function updateFrequencyDisplay(noteName) {
+    document.getElementById('frequencyDisplay').textContent = `Note: ${noteName}`;
+}
+
+function frequencyToNoteName(frequency) {
+    const A4 = 440;
+    const A4NoteNumber = 69; // MIDI note number for A4
+    const halfStep = 12 * Math.log2(frequency / A4);
+    const noteNumber = Math.round(halfStep) + A4NoteNumber;
+
+    const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    const octave = Math.floor(noteNumber / 12) - 1;
+    const noteIndex = noteNumber % 12;
+    const noteName = scale[noteIndex];
+
+    // Calculate the difference in cents
+    const centDifference = 1200 * Math.log2(frequency / A4) - Math.round(halfStep) * 100;
+
+    // Determine if the note is closer to a quarter tone sharp or flat
+    let quarterToneIndicator = '';
+    if (centDifference > 25) {
+        quarterToneIndicator = '^';
+    } else if (centDifference < -25) {
+        quarterToneIndicator = '_';
+    }
+
+    return noteName + quarterToneIndicator + octave;
+}
+
+let noteName = frequencyToNoteName(endFrequency);
+updateFrequencyDisplay(noteName);
 
 function startColorChange() {
     document.querySelectorAll('.color-block').forEach(block => {
