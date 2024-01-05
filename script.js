@@ -16,12 +16,12 @@ function createColorBlocks() {
     }
 }
 
-
 function playAudio() {
     if (!isPlaying) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
         isPlaying = true;
         startGlissando();
+        startColorChange();
     }
 }
 
@@ -82,15 +82,6 @@ function startGlissando() {
     }
 }
 
-
-function randomFrequency(min, max) {
-    return Math.random() * (max - min) + min;
-}
-
-function randomBetween(min, max) {
-    return Math.random() * (max - min) + min;
-}
-
 function startColorChange() {
     document.querySelectorAll('.color-block').forEach(block => {
         const interval = setInterval(() => changeBlockColor(block), Math.random() * 5000 + 2000);
@@ -108,3 +99,13 @@ function changeBlockColor(block) {
     block.style.transition = 'background-color 2s'; // Slow transition for the color change
     block.style.backgroundColor = greenShade;
 }
+
+function randomFrequency(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+function randomBetween(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+
