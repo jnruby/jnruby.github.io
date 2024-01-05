@@ -8,15 +8,6 @@ document.addEventListener('DOMContentLoaded', () => {
     createColorBlocks();
 });
 
-function createColorBlocks() {
-    const container = document.getElementById('container');
-    for (let i = 0; i < 24; i++) {
-        let block = document.createElement('div');
-        block.className = 'color-block';
-        container.appendChild(block);
-    }
-}
-
 function playAudio() {
     if (!isPlaying) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
@@ -33,7 +24,6 @@ function stopAudio() {
         stopColorChange();
     }
 }
-
 
 function createSpringReverb(context) {
     let feedback = context.createGain();
@@ -60,8 +50,9 @@ function applyDynamics(gainNode, startTime, endTime) {
 
 function startGlissando() {
     let startTime = audioContext.currentTime;
-    let glissandoEndTime = startTime + 4;
-    let holdEndTime = glissandoEndTime + 1;
+    let glissandoDuration = randomBetween(5, 15); // gliss duration random between 5 and 15 seconds
+    let glissandoEndTime = startTime + glissandoDuration;
+    let holdEndTime = glissandoEndTime + randomBetween(1, 5); // hold time between 1 and 5 seconds
 
     let sineOscillator = audioContext.createOscillator();
     sineOscillator.type = 'sine'; 
@@ -122,7 +113,7 @@ function updateFrequencyDisplay(noteName) {
 
 function frequencyToNoteName(frequency) {
     const A4 = 440;
-    const A4NoteNumber = 69; // MIDI note number for A4
+    const A4NoteNumber = 69; // MIDI note 69 number for A4 (transposition?)
     const halfStep = 12 * Math.log2(frequency / A4);
     const noteNumber = Math.round(halfStep) + A4NoteNumber;
 
@@ -148,9 +139,19 @@ function frequencyToNoteName(frequency) {
 let noteName = frequencyToNoteName(endFrequency);
 updateFrequencyDisplay(noteName);
 
+// initiate color blocks
+function createColorBlocks() {
+    const container = document.getElementById('container');
+    for (let i = 0; i < 24; i++) {
+        let block = document.createElement('div');
+        block.className = 'color-block';
+        container.appendChild(block);
+    }
+}
+
 function startColorChange() {
     document.querySelectorAll('.color-block').forEach(block => {
-        const interval = setInterval(() => changeBlockColor(block), Math.random() * 5000 + 2000);
+        const interval = setInterval(() => changeBlockColor(block), Math.random() * 5000 + 20000); // Changes every 5 to 40 seconds
         colorChangeIntervals.push(interval);
     });
 }
@@ -173,5 +174,3 @@ function randomFrequency(min, max) {
 function randomBetween(min, max) {
     return Math.random() * (max - min) + min;
 }
-
-
