@@ -1,7 +1,10 @@
-// Create an audio context
+// Initialize audio context and gain node
 let audioContext = new AudioContext();
+let gainNode = audioContext.createGain();
+gainNode.connect(audioContext.destination);
+let currentFrequency = randomFrequency(65, 1000);
 let isPlaying = false;
-let endFrequency = randomFrequency(65.41, 1500);
+let sineOscillator;
 let colorChangeIntervals = [];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -10,8 +13,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
 function playAudio() {
     if (!isPlaying) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
         isPlaying = true;
+        currentFrequency = randomFrequency(65, 1000); // Reset to a new random start frequency
         startGlissando();
         startColorChange();
     }
@@ -20,92 +23,54 @@ function playAudio() {
 function stopAudio() {
     if (isPlaying) {
         isPlaying = false;
-        audioContext.close();
-        stopColorChange();
+        let currentTime = audioContext.currentTime;
+        gainNode.gain.linearRampToValueAtTime(0, currentTime + 0.1); // Fade out before stopping
+
+        setTimeout(() => {
+            if (sineOscillator) {
+                sineOscillator.stop();
+                sineOscillator.disconnect();
+            }
+            audioContext.close();
+            stopColorChange();
+            audioContext = new AudioContext();
+            gainNode = audioContext.createGain();
+            gainNode.connect(audioContext.destination);
+        }, 100); // Stop after fade-out
     }
 }
 
-function createSpringReverb(context) {
-    let feedback = context.createGain();
-    let delay = context.createDelay();
-
-    // Increase feedback gain and delay time for a longer reverb tail
-    feedback.gain.value = 0.8;  // Higher value for more pronounced effect
-    delay.delayTime.value = 0.3; // Longer delay for extended reverb
-
-    delay.connect(feedback);
-    feedback.connect(delay);
-
-    return delay;
-}
-
-function applyDynamics(gainNode, startTime, endTime) {
-    let swellDuration = randomBetween(6, 12);
-    let midPoint = startTime + (endTime - startTime) / 2;
-
-    gainNode.gain.setValueAtTime(0.5, startTime);
-    gainNode.gain.linearRampToValueAtTime(1, midPoint);
-    gainNode.gain.linearRampToValueAtTime(0.5, endTime);
-}
-
+// Function to start a glissando
 function startGlissando() {
+    if (!isPlaying) return;
+    let fadeInDuration = 0.1; // 100 ms fade in
+    let fadeOutDuration = 0.1; // 100 ms fade out
     let startTime = audioContext.currentTime;
-    let glissandoDuration = randomBetween(5, 15); // gliss duration random between 5 and 15 seconds
-    let glissandoEndTime = startTime + glissandoDuration;
-    let holdEndTime = glissandoEndTime + randomBetween(1, 5); // hold time between 1 and 5 seconds
 
     let sineOscillator = audioContext.createOscillator();
-    sineOscillator.type = 'sine'; 
-    let squareOscillator = audioContext.createOscillator();
-    squareOscillator.type = 'square';
+    sineOscillator.type = 'sine';
 
-    let springReverb = createSpringReverb(audioContext);
-    let gainNode = audioContext.createGain();
+    let endFrequency = randomFrequency(65, 1000);
+    let glissandoDuration = randomBetween(6, 15);
+    let glissandoEndTime = startTime + glissandoDuration; // Calculate glissando end time
+    let holdDuration = randomBetween(2, 5);
 
-    sineOscillator.frequency.setValueAtTime(endFrequency + 50, startTime);
-    squareOscillator.frequency.setValueAtTime(endFrequency, startTime);
-    endFrequency = randomFrequency(65.41, 1500);
-
-
-    // Convert frequency to note name and update display
-    let noteName = frequencyToNoteName(endFrequency);
-    updateFrequencyDisplay(noteName);
-
-    sineOscillator.frequency.linearRampToValueAtTime(endFrequency + 50, glissandoEndTime);
-    squareOscillator.frequency.linearRampToValueAtTime(endFrequency, glissandoEndTime);
+    sineOscillator.frequency.setValueAtTime(currentFrequency, audioContext.currentTime);
+    sineOscillator.frequency.linearRampToValueAtTime(endFrequency, audioContext.currentTime + glissandoDuration);
 
     sineOscillator.connect(gainNode);
-    squareOscillator.connect(gainNode);
-    gainNode.connect(springReverb);
-    springReverb.connect(audioContext.destination);
+    sineOscillator.start();
 
-    applyDynamics(gainNode, startTime, holdEndTime);
+    setTimeout(() => {
+        sineOscillator.stop();
+        currentFrequency = endFrequency; // Update frequency for next glissando
+        startGlissando(); // Start the next glissando
+    }, (glissandoEndTime + holdDuration - audioContext.currentTime) * 1000);
 
-    sineOscillator.start(startTime);
-    squareOscillator.start(startTime);
-    sineOscillator.stop(holdEndTime);
-    squareOscillator.stop(holdEndTime);
+    let noteName = frequencyToNoteName(endFrequency); // send hz to notenames
+    updateFrequencyDisplay(noteName);
+} 
 
-    if (isPlaying) {
-        setTimeout(startGlissando, (holdEndTime - startTime) * 1000);
-    }
-        // Microphone setup
-        navigator.mediaDevices.getUserMedia({ audio: true }).then(stream => {
-            let micInput = audioContext.createMediaStreamSource(stream);
-            let modulator = audioContext.createGain();
-    
-            // Connect the sine oscillator to the modulator
-            sineOscillator.connect(modulator.gain);
-    
-            // Connect the microphone to the modulator
-            micInput.connect(modulator);
-    
-            // Connect modulator to the rest of your audio chain
-            modulator.connect(gainNode);
-        }).catch(err => {
-            console.error('Error accessing the microphone', err);
-        });
-}
 
 function updateFrequencyDisplay(noteName) {
     document.getElementById('frequencyDisplay').textContent = `Note: ${noteName}`;
@@ -113,7 +78,7 @@ function updateFrequencyDisplay(noteName) {
 
 function frequencyToNoteName(frequency) {
     const A4 = 440;
-    const A4NoteNumber = 69; // MIDI note 69 number for A4 (transposition?)
+    const A4NoteNumber = 69; // MIDI note number for A4
     const halfStep = 12 * Math.log2(frequency / A4);
     const noteNumber = Math.round(halfStep) + A4NoteNumber;
 
@@ -136,10 +101,23 @@ function frequencyToNoteName(frequency) {
     return noteName + quarterToneIndicator + octave;
 }
 
-let noteName = frequencyToNoteName(endFrequency);
-updateFrequencyDisplay(noteName);
+// Function to generate a random frequency
+function randomFrequency(min, max) {
+    return Math.random() * (max - min) + min;
+}
 
-// initiate color blocks
+// Function to generate a random duration
+function randomBetween(min, max) {
+    return Math.random() * (max - min) + min;
+}
+
+// Slider for volume control
+let slider = document.getElementById('volumeSlider');
+slider.addEventListener('input', () => {
+    gainNode.gain.cancelScheduledValues(audioContext.currentTime); // Cancel any scheduled changes
+    gainNode.gain.setValueAtTime(slider.value, audioContext.currentTime); // Set gain immediately to slider's value
+});
+
 function createColorBlocks() {
     const container = document.getElementById('container');
     for (let i = 0; i < 24; i++) {
@@ -151,7 +129,7 @@ function createColorBlocks() {
 
 function startColorChange() {
     document.querySelectorAll('.color-block').forEach(block => {
-        const interval = setInterval(() => changeBlockColor(block), Math.random() * 5000 + 20000); // Changes every 5 to 40 seconds
+        const interval = setInterval(() => changeBlockColor(block), Math.random() * 5000 + 2000);
         colorChangeIntervals.push(interval);
     });
 }
@@ -165,12 +143,4 @@ function changeBlockColor(block) {
     const greenShade = `rgb(0, ${Math.floor(Math.random() * 256)}, 0)`;
     block.style.transition = 'background-color 2s'; // Slow transition for the color change
     block.style.backgroundColor = greenShade;
-}
-
-function randomFrequency(min, max) {
-    return Math.random() * (max - min) + min;
-}
-
-function randomBetween(min, max) {
-    return Math.random() * (max - min) + min;
 }
