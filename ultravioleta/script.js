@@ -2,9 +2,14 @@
 let audioContext = new AudioContext();
 let gainNode = audioContext.createGain();
 gainNode.connect(audioContext.destination);
-let currentFrequency = randomFrequency(65, 1000);
+
+let currentFrequency1 = randomFrequency(65, 1000);
+let currentFrequency2 = randomFrequency(65, 1000); // Frequency for the second oscillator
 let isPlaying = false;
-let sineOscillator;
+
+let sineOscillator1;
+let sineOscillator2; // Second oscillator
+
 let colorChangeIntervals = [];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -14,8 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function playAudio() {
     if (!isPlaying) {
         isPlaying = true;
-        currentFrequency = randomFrequency(65, 1000); // Reset to a new random start frequency
-        startGlissando();
+        currentFrequency1 = randomFrequency(65, 1000);
+        currentFrequency2 = randomFrequency(65, 1000);
+        startGlissando(sineOscillator1, currentFrequency1, 'frequencyDisplay1');
+        startGlissando(sineOscillator2, currentFrequency2, 'frequencyDisplay2');
         startColorChange();
     }
 }
@@ -27,53 +34,56 @@ function stopAudio() {
         gainNode.gain.linearRampToValueAtTime(0, currentTime + 0.1); // Fade out before stopping
 
         setTimeout(() => {
-            if (sineOscillator) {
-                sineOscillator.stop();
-                sineOscillator.disconnect();
-            }
-            audioContext.close();
+            stopOscillator(sineOscillator1); // Stop first oscillator
+            stopOscillator(sineOscillator2); // Stop second oscillator
             stopColorChange();
-            audioContext = new AudioContext();
-            gainNode = audioContext.createGain();
-            gainNode.connect(audioContext.destination);
+            resetAudioContext();
         }, 100); // Stop after fade-out
     }
 }
 
-// Function to start a glissando
-function startGlissando() {
-    if (!isPlaying) return;
-    let fadeInDuration = 0.1; // 100 ms fade in
-    let fadeOutDuration = 0.1; // 100 ms fade out
-    let startTime = audioContext.currentTime;
+function resetAudioContext() {
+    audioContext.close();
+    audioContext = new AudioContext();
+    gainNode = audioContext.createGain();
+    gainNode.connect(audioContext.destination);
+}
 
-    let sineOscillator = audioContext.createOscillator();
-    sineOscillator.type = 'sine';
+function stopOscillator(oscillator) {
+    if (oscillator) {
+        oscillator.stop();
+        oscillator.disconnect();
+    }
+}
+
+// Function to start a glissando
+function startGlissando(oscillator, currentFrequency, displayId) {
+    if (!isPlaying) return;
+
+    oscillator = audioContext.createOscillator();
+    oscillator.type = 'sine';
 
     let endFrequency = randomFrequency(65, 1000);
     let glissandoDuration = randomBetween(6, 15);
-    let glissandoEndTime = startTime + glissandoDuration; // Calculate glissando end time
     let holdDuration = randomBetween(2, 5);
 
-    sineOscillator.frequency.setValueAtTime(currentFrequency, audioContext.currentTime);
-    sineOscillator.frequency.linearRampToValueAtTime(endFrequency, audioContext.currentTime + glissandoDuration);
+    oscillator.frequency.setValueAtTime(currentFrequency, audioContext.currentTime);
+    oscillator.frequency.linearRampToValueAtTime(endFrequency, audioContext.currentTime + glissandoDuration);
 
-    sineOscillator.connect(gainNode);
-    sineOscillator.start();
+    oscillator.connect(gainNode);
+    oscillator.start();
 
     setTimeout(() => {
-        sineOscillator.stop();
-        currentFrequency = endFrequency; // Update frequency for next glissando
-        startGlissando(); // Start the next glissando
-    }, (glissandoEndTime + holdDuration - audioContext.currentTime) * 1000);
+        stopOscillator(oscillator);
+        startGlissando(oscillator, endFrequency, displayId); // Start the next glissando
+    }, (glissandoDuration + holdDuration) * 1000);
 
-    let noteName = frequencyToNoteName(endFrequency); // send hz to notenames
-    updateFrequencyDisplay(noteName);
-} 
+    let noteName = frequencyToNoteName(endFrequency);
+    updateFrequencyDisplay(noteName, displayId);
+}
 
-
-function updateFrequencyDisplay(noteName) {
-    document.getElementById('frequencyDisplay').textContent = `Note: ${noteName}`;
+function updateFrequencyDisplay(noteName, displayId) {
+    document.getElementById(displayId).textContent = `Note: ${noteName}`;
 }
 
 function frequencyToNoteName(frequency) {
