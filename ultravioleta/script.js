@@ -1,3 +1,6 @@
+import { createReverb, applyReverb } from './effects.js';
+import { createDelay, applyDelayToOscillator } from './effects.js';
+
 // Initialize audio context and gain node
 let audioContext = new AudioContext();
 let gainNode = audioContext.createGain();
@@ -24,8 +27,10 @@ function playAudio() {
         startGlissando(sineOscillator1, currentFrequency1, freq1, 'frequencyDisplay1', 'progressBar1');
         startGlissando(sineOscillator2, currentFrequency2, freq2, 'frequencyDisplay2', 'progressBar2');
         startColorChange();
-    }
+            }
 }
+        window.playAudio = playAudio;
+        window.stopAudio = stopAudio;
 
 function stopAudio() {
     if (isPlaying) {
@@ -67,6 +72,11 @@ function startGlissando(oscillator, currentFrequency, endFrequency, displayId, p
 
     oscillator.frequency.setValueAtTime(currentFrequency, audioContext.currentTime);
     oscillator.frequency.linearRampToValueAtTime(endFrequency, audioContext.currentTime + glissandoDuration);
+
+    // Apply effects to the oscillator
+    applyReverb(oscillator, audioContext, 2, 2); // Example duration and decay parameters
+    applyDelayToOscillator(oscillator, audioContext, 0.5, 0.5); // Example delay time and feedback
+
 
     oscillator.connect(gainNode);
     oscillator.start();
@@ -154,10 +164,11 @@ function createColorBlocks() {
     }
 }
 
+
 function startColorChange() {
+    const duration = 7 * 60 * 1000; // 7 minutes in milliseconds
     document.querySelectorAll('.color-block').forEach(block => {
-        const interval = setInterval(() => changeBlockColor(block), Math.random() * 5000 + 2000);
-        colorChangeIntervals.push(interval);
+        changeBlockColor(block, duration);
     });
 }
 
@@ -166,8 +177,21 @@ function stopColorChange() {
     colorChangeIntervals = [];
 }
 
-function changeBlockColor(block) {
-    const greenShade = `rgb(0, ${Math.floor(Math.random() * 256)}, 0)`;
-    block.style.transition = 'background-color 2s'; // Slow transition for the color change
-    block.style.backgroundColor = greenShade;
+function changeBlockColor(block, duration) {
+    const endTime = Date.now() + duration;
+    const interval = setInterval(() => {
+        const currentTime = Date.now();
+        const elapsed = (currentTime - (endTime - duration)) / duration;
+        
+        if (currentTime >= endTime) {
+            clearInterval(interval);
+        }
+
+        // Interpolate from green to violet over time
+        const green = Math.floor(255 * (1 - elapsed));
+        const red = Math.floor(148 + 107 * elapsed); // 148 (green) to 255 (violet)
+        const blue = Math.floor(0 + 255 * elapsed);  // 0 (green) to 255 (violet)
+
+        block.style.backgroundColor = `rgb(${red}, ${green}, ${blue})`;
+    }, 1000); // Update every second
 }
