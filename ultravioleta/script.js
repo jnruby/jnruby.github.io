@@ -103,9 +103,9 @@ function frequencyToNoteName(frequency) {
     // Determine if the note is closer to a quarter tone sharp or flat
     let quarterToneIndicator = '';
     if (centDifference > 25) {
-        quarterToneIndicator = '^';
+        quarterToneIndicator = '𝄪';
     } else if (centDifference < -25) {
-        quarterToneIndicator = '_';
+        quarterToneIndicator = '𝄫';
     }
 
     return noteName + quarterToneIndicator + octave;
@@ -128,6 +128,7 @@ slider.addEventListener('input', () => {
     gainNode.gain.setValueAtTime(slider.value, audioContext.currentTime); // Set gain immediately to slider's value
 });
 
+// generate color blocks
 function createColorBlocks() {
     const container = document.getElementById('container');
     for (let i = 0; i < 24; i++) {

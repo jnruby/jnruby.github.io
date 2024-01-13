@@ -18,6 +18,8 @@ body, html {
 .color-block {
     border: none; /* Removes border */
     background-color: green;
+    border-radius: 0px; /* Rounds the corners */
+    transition: background-color 2s; /* Smooth transition for color */
 }
 
 .controls {
