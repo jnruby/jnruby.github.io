@@ -74,8 +74,8 @@ function startGlissando(oscillator, currentFrequency, endFrequency, displayId, p
     oscillator.frequency.linearRampToValueAtTime(endFrequency, audioContext.currentTime + glissandoDuration);
 
     // Apply effects to the oscillator
-    applyReverb(oscillator, audioContext, 2, 2); // Example duration and decay parameters
-    applyDelayToOscillator(oscillator, audioContext, 0.5, 0.5); // Example delay time and feedback
+    applyReverb(oscillator, audioContext, 2, 2, gainNode); // Example duration and decay parameters
+    applyDelayToOscillator(oscillator, audioContext, 0.5, 0.5, gainNode);
 
 
     oscillator.connect(gainNode);

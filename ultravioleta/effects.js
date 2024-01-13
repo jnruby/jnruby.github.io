@@ -25,28 +25,25 @@ export function applyReverb(oscillator, audioContext, duration, decay) {
 }
 
 export function createDelay(audioContext, delayTime = 0.5, feedbackAmount = 0.5) {
-    // Create the nodes
     const delay = audioContext.createDelay();
     const feedback = audioContext.createGain();
 
-    // Configure delay time
     delay.delayTime.value = delayTime;
-
-    // Configure feedback loop
     feedback.gain.value = feedbackAmount;
+
     delay.connect(feedback);
     feedback.connect(delay);
 
-    // Return a node that can be connected to the audio graph
-    const inputNode = audioContext.createGain();
-    inputNode.connect(delay);
-    inputNode.connect(audioContext.destination); // Direct path
-    feedback.connect(audioContext.destination); // Feedback path
+    // Create a gain node for the delayed signal
+    const delayOutputGain = audioContext.createGain();
+    feedback.connect(delayOutputGain);
 
-    return inputNode;
+    // Return the delay node and its output gain node
+    return { delay, delayOutputGain };
 }
 
-export function applyDelayToOscillator(oscillator, audioContext, delayTime, feedbackAmount) {
-    const delayNode = createDelay(audioContext, delayTime, feedbackAmount);
-    oscillator.connect(delayNode);
+export function applyDelayToOscillator(oscillator, audioContext, delayTime, feedbackAmount, outputGainNode) {
+    const { delay, delayOutputGain } = createDelay(audioContext, delayTime, feedbackAmount);
+    oscillator.connect(delay);
+    delayOutputGain.connect(outputGainNode); // Connect delay output to the master gain node
 }
