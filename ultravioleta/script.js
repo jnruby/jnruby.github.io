@@ -92,24 +92,23 @@ function frequencyToNoteName(frequency) {
     const halfStep = 12 * Math.log2(frequency / A4);
     const noteNumber = Math.round(halfStep) + A4NoteNumber;
 
-    const scale = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
-    const octave = Math.floor(noteNumber / 12) - 1;
-    const noteIndex = noteNumber % 12;
+    // Expanded scale including double sharps and double flats
+    const scale = [
+        "C", "C#", "Cx", "D", "D#", "Dx", "E", "E#", "F", "F#", "Fx", "G", 
+        "G#", "Gx", "A", "A#", "Ax", "B", "B#", "C𝄫", "C#", "Cx", "D𝄫", "D#", 
+        "Dx", "E𝄫", "E", "E#", "F𝄫", "F", "F#", "Fx", "G𝄫"
+    ];
+    
+    const octaveOffset = Math.floor(noteNumber / scale.length);
+    const noteIndex = noteNumber % scale.length;
     const noteName = scale[noteIndex];
+    const octave = octaveOffset - 1;
 
-    // Calculate the difference in cents
-    const centDifference = 1200 * Math.log2(frequency / A4) - Math.round(halfStep) * 100;
-
-    // Determine if the note is closer to a quarter tone sharp or flat
-    let quarterToneIndicator = '';
-    if (centDifference > 25) {
-        quarterToneIndicator = '𝄪';
-    } else if (centDifference < -25) {
-        quarterToneIndicator = '𝄫';
-    }
-
-    return noteName + quarterToneIndicator + octave;
+    return noteName;
 }
+console.log(frequencyToNoteName(440)); // Should return A4
+
+
 
 // Function to generate a random frequency
 function randomFrequency(min, max) {
