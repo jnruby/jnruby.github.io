@@ -32,6 +32,6 @@ button {
     cursor: pointer;
 }
 
-#frequencyDisplay {
-    color: red;
+#frequencyDisplay1, #frequencyDisplay2 {
+    color: red; /* Changes the text color to red */
 }
