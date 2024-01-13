@@ -19,10 +19,10 @@ document.addEventListener('DOMContentLoaded', () => {
 function playAudio() {
     if (!isPlaying) {
         isPlaying = true;
-        currentFrequency1 = randomFrequency(65, 1000);
-        currentFrequency2 = randomFrequency(65, 1000);
-        startGlissando(sineOscillator1, currentFrequency1, 'frequencyDisplay1');
-        startGlissando(sineOscillator2, currentFrequency2, 'frequencyDisplay2');
+        let freq1 = randomFrequency(65, 1000);
+        let freq2 = randomFrequency(65, 1000);
+        startGlissando(sineOscillator1, currentFrequency1, freq1, 'frequencyDisplay1', 'progressBar1');
+        startGlissando(sineOscillator2, currentFrequency2, freq2, 'frequencyDisplay2', 'progressBar2');
         startColorChange();
     }
 }
@@ -56,14 +56,12 @@ function stopOscillator(oscillator) {
     }
 }
 
-// Function to start a glissando
-function startGlissando(oscillator, currentFrequency, displayId) {
+function startGlissando(oscillator, currentFrequency, endFrequency, displayId, progressBarId) {
     if (!isPlaying) return;
 
     oscillator = audioContext.createOscillator();
     oscillator.type = 'sine';
 
-    let endFrequency = randomFrequency(65, 1000);
     let glissandoDuration = randomBetween(6, 15);
     let holdDuration = randomBetween(2, 5);
 
@@ -73,13 +71,32 @@ function startGlissando(oscillator, currentFrequency, displayId) {
     oscillator.connect(gainNode);
     oscillator.start();
 
+    updateProgressBar(oscillator.frequency, currentFrequency, endFrequency, progressBarId, glissandoDuration);
+
     setTimeout(() => {
         stopOscillator(oscillator);
-        startGlissando(oscillator, endFrequency, displayId); // Start the next glissando
+        startGlissando(oscillator, endFrequency, randomFrequency(65, 1000), displayId, progressBarId); // Start the next glissando
     }, (glissandoDuration + holdDuration) * 1000);
 
     let noteName = frequencyToNoteName(endFrequency);
     updateFrequencyDisplay(noteName, displayId);
+}
+
+function updateProgressBar(frequency, startFreq, endFreq, progressBarId, duration) {
+    const progressBar = document.getElementById(progressBarId);
+    const updateFrequency = 100; // Update every 100ms
+    let elapsed = 0;
+
+    const interval = setInterval(() => {
+        elapsed += updateFrequency;
+        const currentFreq = frequency.value;
+        const progress = (currentFreq - startFreq) / (endFreq - startFreq) * 100;
+        progressBar.value = Math.max(0, Math.min(100, progress));
+
+        if (elapsed >= duration * 1000) {
+            clearInterval(interval);
+        }
+    }, updateFrequency);
 }
 
 function updateFrequencyDisplay(noteName, displayId) {
