@@ -1,5 +1,7 @@
 import { createReverb, applyReverb } from './effects.js';
 import { createDelay, applyDelayToOscillator } from './effects.js';
+import { initializeMicrophone } from './microphone.js';
+
 
 // Initialize audio context and gain node
 let audioContext = new AudioContext();
@@ -22,19 +24,28 @@ document.addEventListener('DOMContentLoaded', () => {
 function playAudio() {
     if (!isPlaying) {
         isPlaying = true;
+
+        // Set the initial volume based on the slider's position
+        const volumeSlider = document.getElementById('volumeSlider');
+        gainNode.gain.value = volumeSlider.value;
+
         let freq1 = randomFrequency(65, 1000);
         let freq2 = randomFrequency(65, 1000);
+        sineOscillator1 = audioContext.createOscillator(); // Initialize the oscillator
+        sineOscillator2 = audioContext.createOscillator(); // Initialize the oscillator
         startGlissando(sineOscillator1, currentFrequency1, freq1, 'frequencyDisplay1', 'progressBar1');
         startGlissando(sineOscillator2, currentFrequency2, freq2, 'frequencyDisplay2', 'progressBar2');
         startColorChange();
-            }
+    }
 }
+        
         window.playAudio = playAudio;
         window.stopAudio = stopAudio;
 
 function stopAudio() {
     if (isPlaying) {
         isPlaying = false;
+
         let currentTime = audioContext.currentTime;
         gainNode.gain.linearRampToValueAtTime(0, currentTime + 0.1); // Fade out before stopping
 
