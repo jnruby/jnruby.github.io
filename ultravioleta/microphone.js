@@ -4,14 +4,21 @@ export async function initializeMicrophone(audioContext) {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
         // Create a source node from the microphone input stream
-        const source = audioContext.createMediaStreamSource(stream);
+        const microphoneSource = audioContext.createMediaStreamSource(stream);
 
-        // Connect the source node to the destination (speakers)
-        source.connect(audioContext.destination);
+        // Create an analyser node
+        const analyser = audioContext.createAnalyser();
+        analyser.fftSize = 2048;
 
-        return source;
+        // Connect the microphone source to the analyser
+        microphoneSource.connect(analyser);
+
+        // You can also connect the analyser to the destination if you want to hear the microphone input
+        // analyser.connect(audioContext.destination);
+
+        return { microphoneSource, analyser };
     } catch (err) {
         console.error('Error accessing the microphone:', err);
-        return null;
+        throw err; // Rethrow the error so it can be caught where the function is called
     }
 }

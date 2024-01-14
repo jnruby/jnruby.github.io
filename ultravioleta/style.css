@@ -37,3 +37,21 @@ button {
 #frequencyDisplay1, #frequencyDisplay2 {
     color: red; /* Changes the text color to red */
 }
+
+#microphoneLevelMeter {
+    width: 0%; /* Initial width */
+    height: 20px; /* Adjust height as needed */
+    background-color: green; /* Color of the meter */
+    transition: width 0.2s ease; /* Smooth transition for width changes */
+    border: 1px solid #000; /* Optional: adds a border */
+}
+
+/* Additional styling for the container (if needed) */
+#microphoneLevelMeterContainer {
+    width: 100%; /* Full width of the container */
+    height: 30px; /* Height of the container */
+    border: 1px solid #aaa; /* Border for the container */
+    background-color: #f0f0f0; /* Background color of the container */
+    display: flex; /* Ensures the meter aligns correctly */
+    align-items: center; /* Center-aligns the meter vertically */
+}
