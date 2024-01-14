@@ -57,7 +57,21 @@ async function setupMicrophone() {
 }
 
 
+document.getElementById('playButton').addEventListener('click', function() {
+    // Check if the audio context is suspended
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+    
+    // Call your function to start playing audio
+    playAudio();
+});
+
 async function playAudio() {
+        // Resume AudioContext if it's suspended
+        if (audioContext.state === 'suspended') {
+            await audioContext.resume();
+        }
     if (!isPlaying) {
         isPlaying = true;
 
