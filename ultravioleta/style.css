@@ -40,18 +40,17 @@ button {
 
 #microphoneLevelMeter {
     width: 0%; /* Initial width */
-    height: 10px; /* Adjust height as needed */
+    height: 10px; 
     background-color: green; /* Color of the meter */
     transition: width 0.2s ease; /* Smooth transition for width changes */
-    border: 1px solid #000; /* Optional: adds a border */
+    border: 1px solid #000; 
 }
 
-/* Additional styling for the container (if needed) */
 #microphoneLevelMeterContainer {
     width: 50%; /* Full width of the container */
     height: 10px; /* Height of the container */
     border: 1px solid #aaa; /* Border for the container */
     background-color: #f0f0f0; /* Background color of the container */
-    display: flex; /* Ensures the meter aligns correctly */
+    display: flex; /* meter alignment 
     align-items: center; /* Center-aligns the meter vertically */
 }

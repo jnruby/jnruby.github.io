@@ -1,4 +1,4 @@
-export function createReverb(audioContext, duration = 2, decay = 2) {
+export function createReverb(audioContext, duration = 4, decay = 2) {
     const sampleRate = audioContext.sampleRate;
     const length = sampleRate * duration;
     const impulse = audioContext.createBuffer(2, length, sampleRate);

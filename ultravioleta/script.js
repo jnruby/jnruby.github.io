@@ -24,7 +24,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function setupMicrophone() {
     try {
-        // Create a new AudioContext or use a previously created one
         if (!audioContext) {
             audioContext = new AudioContext();
         }
@@ -32,17 +31,17 @@ async function setupMicrophone() {
         // Request access to the microphone
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
 
-        // Create a source node from the microphone input stream
+        // source node from the microphone input stream
         const microphoneSource = audioContext.createMediaStreamSource(stream);
 
-        // Create an analyser node
+        // analyser node
         const analyser = audioContext.createAnalyser();
         analyser.fftSize = 2048; // This value can be adjusted depending on your needs
 
-        // Connect the microphone source to the analyser
+        // microphone source to the analyser
         microphoneSource.connect(analyser);
 
-        // Optionally, you can connect the analyser to the destination to hear the input
+        // direct microphone input 
         analyser.connect(audioContext.destination);
 
         // Set the global analyser variable
@@ -56,7 +55,6 @@ async function setupMicrophone() {
     }
 }
 
-
 document.getElementById('playButton').addEventListener('click', function() {
     // Check if the audio context is suspended
     if (audioContext.state === 'suspended') {
@@ -68,12 +66,19 @@ document.getElementById('playButton').addEventListener('click', function() {
 });
 
 async function playAudio() {
-        // Resume AudioContext if it's suspended
+    if (!isPlaying) {
+        isPlaying = true;
+
+        // Check and resume the AudioContext if it's in a suspended state
         if (audioContext.state === 'suspended') {
             await audioContext.resume();
         }
-    if (!isPlaying) {
-        isPlaying = true;
+        
+        // Initially set the gain to 0 (silent)
+        gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+
+        // Gradually increase the volume to full over 5 seconds
+        gainNode.gain.linearRampToValueAtTime(1, audioContext.currentTime + 5);
 
         // Set the initial volume based on the slider's position
         const volumeSlider = document.getElementById('volumeSlider');
@@ -118,8 +123,7 @@ function updateMicrophoneLevel() {
     }
     const rms = Math.sqrt(sum / dataArray.length);
     
-    // Update your meter display based on rms
-    // For example, setting the width of a div element
+    // meter display based on rms
     const levelMeter = document.getElementById('microphoneLevelMeter');
     if (levelMeter) {
         levelMeter.style.width = `${rms * 100}%`;
@@ -222,7 +226,6 @@ function frequencyToNoteName(frequency) {
     const halfStep = 12 * Math.log2(frequency / A4);
     const noteNumber = Math.round(halfStep) + A4NoteNumber;
 
-    // Expanded scale including double sharps and double flats
     const scale = [
         "C", "C#", "Cx", "D", "D#", "Dx", "E", "E#", "F", "F#", "Fx", "G", 
         "G#", "Gx", "A", "A#", "Ax", "B", "B#", "C𝄫", "C#", "Cx", "D𝄫", "D#", 
@@ -237,8 +240,6 @@ function frequencyToNoteName(frequency) {
     return noteName;
 }
 console.log(frequencyToNoteName(440)); // Should return A4
-
-
 
 // Function to generate a random frequency
 function randomFrequency(min, max) {
@@ -266,7 +267,6 @@ function createColorBlocks() {
         container.appendChild(block);
     }
 }
-
 
 function startColorChange() {
     const duration = 7 * 60 * 1000; // 7 minutes in milliseconds
