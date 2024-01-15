@@ -216,7 +216,7 @@ function updateProgressBar(frequency, startFreq, endFreq, progressBarId, duratio
 }
 
 function updateFrequencyDisplay(noteName, displayId) {
-    document.getElementById(displayId).textContent = `Note: ${noteName}`;
+    document.getElementById(displayId).textContent = `${noteName}`;
 }
 
 function frequencyToNoteName(frequency) {
