@@ -2,7 +2,6 @@ import { createReverb, applyReverb } from './effects.js';
 import { createDelay, applyDelayToOscillator } from './effects.js';
 import { initializeMicrophone } from './microphone.js';
 
-
 // Initialize audio context and gain node
 let audioContext = new AudioContext();
 let gainNode = audioContext.createGain();
@@ -47,7 +46,7 @@ async function setupMicrophone() {
         // Set the global analyser variable
         microphoneAnalyser = analyser;
         
-        // Update the microphone level (for visualization, etc.)
+        // Update the microphone level
         updateMicrophoneLevel();
     } catch (err) {
         console.error('Error accessing the microphone:', err);
@@ -61,7 +60,7 @@ document.getElementById('playButton').addEventListener('click', function() {
         audioContext.resume();
     }
     
-    // Call your function to start playing audio
+    // Call function 
     playAudio();
 });
 
