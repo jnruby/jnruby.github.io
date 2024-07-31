@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Wave Noise Generator</title>
+    <style>
+        body {
+            margin: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(120deg, #0f3d59 0%, #0f3d59 25%, #0a2a3a 75%, #0a2a3a 100%);
+            background-size: 400% 400%;
+            animation: gradientAnimation 10s ease infinite;
+        }
+
+        @keyframes gradientAnimation {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        button {
+            padding: 20px 40px;
+            font-size: 20px;
+            color: white;
+            background-color: #007BFF;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <button id="startButton">Start Wave Noise</button>
+    <button id="stopButton">Stop Wave Noise</button>
+
+    <script>
+        let audioContext;
+        let noiseBuffer;
+        let waveNodes = [];
+        const fadeTime = 2; // 2 seconds fade in/out
+
+        document.getElementById('startButton').addEventListener('click', startWaveNoise);
+        document.getElementById('stopButton').addEventListener('click', stopWaveNoise);
+
+        function createWave() {
+            const wave = {};
+
+            // Create a noise source
+            wave.noiseSource = audioContext.createBufferSource();
+            wave.noiseSource.buffer = noiseBuffer;
+            wave.noiseSource.loop = true;
+
+            // Create a low-pass filter
+            wave.filter = audioContext.createBiquadFilter();
+            wave.filter.type = 'lowpass';
+            wave.filter.frequency.value = 500; // Adjust this value to shape the wave sound
+
+            // Create a gain node for amplitude modulation
+            wave.gainNode = audioContext.createGain();
+            wave.gainNode.gain.value = 0; // Start with 0 for fade-in effect
+
+            // Create an LFO for periodic volume changes
+            wave.lfo = audioContext.createOscillator();
+            wave.lfo.type = 'sine';
+
+            // Create a gain node to control the LFO amplitude
+            wave.lfoGain = audioContext.createGain();
+            wave.lfoGain.gain.value = 0.5; // Adjust this value to control the intensity of the wave motion
+
+            // Connect LFO to the gain node's gain parameter
+            wave.lfo.connect(wave.lfoGain);
+            wave.lfoGain.connect(wave.gainNode.gain);
+
+            // Connect nodes
+            wave.noiseSource.connect(wave.filter);
+            wave.filter.connect(wave.gainNode);
+            wave.gainNode.connect(audioContext.destination);
+
+            // Start the noise and LFO
+            wave.noiseSource.start();
+            wave.lfo.start();
+
+            return wave;
+        }
+
+        function startWaveNoise() {
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+            // Create a buffer with white noise
+            const bufferSize = 2 * audioContext.sampleRate;
+            noiseBuffer = audioContext.createBuffer(1, bufferSize, audioContext.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = Math.random() * 2 - 1;
+            }
+
+            // Create and start three wave nodes
+            for (let i = 0; i < 3; i++) {
+                const wave = createWave();
+                waveNodes.push(wave);
+
+                // Fade in
+                wave.gainNode.gain.linearRampToValueAtTime(0.5, audioContext.currentTime + fadeTime);
+
+                // Randomize wave motion
+                randomizeLfoFrequency(wave.lfo);
+                wave.lfoInterval = setInterval(() => randomizeLfoFrequency(wave.lfo), 5000);
+            }
+        }
+
+        function stopWaveNoise() {
+            waveNodes.forEach(wave => {
+                if (wave.gainNode) {
+                    // Fade out
+                    wave.gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + fadeTime);
+
+                    // Stop after fade out
+                    setTimeout(() => {
+                        if (wave.noiseSource) {
+                            wave.noiseSource.stop();
+                            wave.noiseSource.disconnect();
+                        }
+                        if (wave.filter) {
+                            wave.filter.disconnect();
+                        }
+                        if (wave.gainNode) {
+                            wave.gainNode.disconnect();
+                        }
+                        if (wave.lfo) {
+                            wave.lfo.stop();
+                            wave.lfo.disconnect();
+                        }
+                        if (audioContext && wave.lfoInterval) {
+                            clearInterval(wave.lfoInterval);
+                        }
+                    }, fadeTime * 1000);
+                }
+            });
+
+            setTimeout(() => {
+                if (audioContext) {
+                    audioContext.close();
+                }
+            }, fadeTime * 1000);
+        }
+
+        function randomizeLfoFrequency(lfo) {
+            const minFrequency = 1 / 12; // 1 wave every 12 seconds
+            const maxFrequency = 1 / 5; // 1 wave every 5 seconds
+            const randomFrequency = Math.random() * (maxFrequency - minFrequency) + minFrequency;
+            lfo.frequency.setValueAtTime(randomFrequency, audioContext.currentTime);
+        }
+    </script>
+</body>
+</html>
+
